@@ -1,8 +1,8 @@
 "use strict";
 
 angular.module('trikatuka2').service('PlaylistService', function (Spotify, $q, RequestHelper) {
-    this.loadPlaylists = function(user, params, itemsTransformer){
-        return Spotify.get('https://api.spotify.com/v1/me/playlists', user, params).then(function(response){
+    this.loadPlaylists = function (user, params, itemsTransformer) {
+        return Spotify.get('https://api.spotify.com/v1/me/playlists', user, params).then(function (response) {
             return {
                 items: itemsTransformer ? _.map(response.data.items, itemsTransformer) : response.data.items,
                 total: response.data.total
@@ -33,12 +33,19 @@ angular.module('trikatuka2').service('PlaylistService', function (Spotify, $q, R
         var promises = [];
         for (var i = 0; i < pages; i++) {
             var data = {
-                uris: _.map(tracks.slice(i * 100, (i * 100) + 100), function(item){
-                    return item.track.uri;
-                })
+                uris: _.chain(tracks.slice(i * 100, (i * 100) + 100))
+                    .filter(function (item) {
+                        if (!item.track || !item.track.uri) {
+                            console.error({ item: item, error: "Something is wrong with this track so it couldn't be added to playlist: " + playlistId + ". Skipping this track." });
+                        }
+                        return item.track && item.track.uri;
+                    })
+                    .map(function (item) {
+                        return item.track.uri;
+                    })
             };
             promises.push(new Page(data));
         }
-        return RequestHelper.doAction('add',promises);
+        return RequestHelper.doAction('add', promises);
     }
 });

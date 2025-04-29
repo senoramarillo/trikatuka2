@@ -3,7 +3,6 @@
 angular.module('trikatuka2').service('RequestHelper', function ($q) {
 
     this.doAction = function (actionName, items, args) {
-        console.log({args})
         var deferred = $q.defer();
         var ret = {
             success: [],
